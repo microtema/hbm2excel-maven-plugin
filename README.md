@@ -5,8 +5,8 @@ Reducing Boilerplate Code with hbm2excel maven plugin
 
 ## Key Features
 * Auto generation by maven compile phase
-* Auto detection commons classes
-* Generate lombok based java beans templates
+* Auto detection commons fields
+* Generate Excel Sheet Workbook file
 * Custom Field mapping
 
 ## How to use
