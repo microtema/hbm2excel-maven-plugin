@@ -1,64 +1,89 @@
 package de.microtema.maven.plugin.hbm2java.excel.template;
 
+import de.microtema.maven.plugin.hbm2java.MojoFileUtil;
 import de.microtema.maven.plugin.hbm2java.model.ColumnDescription;
 import de.microtema.maven.plugin.hbm2java.model.ProjectData;
 import de.microtema.maven.plugin.hbm2java.model.TableDescription;
 import lombok.SneakyThrows;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.text.WordUtils;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.nio.charset.Charset;
-import java.time.LocalDateTime;
+import java.io.FileOutputStream;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-
-import static de.microtema.maven.plugin.hbm2java.excel.template.FileUtil.lineSeparator;
 
 
 public class ExcelTemplate {
 
     @SneakyThrows
-    public void writeOutEntity(TableDescription tableDescription, ProjectData projectData) {
+    public void writeOut(List<TableDescription> tableDescriptions, ProjectData projectData) {
 
-        List<ColumnDescription> listColumnDescriptions = tableDescription.getColumns();
-
-        String tableName = tableDescription.getName();
-        String outputJavaDirectory = projectData.getOutputDirectory();
-
+        String outputFile = projectData.getOutputFile();
         Map<String, String> fieldMapping = projectData.getFieldMapping();
+
+        Workbook workbook = new XSSFWorkbook();
+
+        for (TableDescription tableDescription : tableDescriptions) {
+            writeOutImpl(workbook, tableDescription, fieldMapping);
+        }
+
+        FileOutputStream outputStream = new FileOutputStream(outputFile);
+        workbook.write(outputStream);
+        workbook.close();
     }
 
-    private static String resolveFiledType(String javaType, String sqlType) {
+    private void writeOutImpl(Workbook workbook, TableDescription tableDescription, Map<String, String> fieldMapping) {
 
-        switch (javaType) {
-            case "java.sql.Timestamp":
-                return LocalDateTime.class.getSimpleName();
-            case "java.math.BigDecimal":
-                return BigDecimal.class.getSimpleName();
-            case "java.lang.Integer":
-                return int.class.getSimpleName();
-            case "java.lang.String":
-                return String.class.getSimpleName();
-            case "java.lang.Boolean":
-            case "java.lang.Short":
-                return boolean.class.getSimpleName();
-            default:
-                return resolveFiledTypeFromSQlType(sqlType);
+        String sheetName = MojoFileUtil.cleanupTableName(tableDescription.getName());
+
+        Sheet sheet = workbook.createSheet(sheetName);
+
+        writeHeaders(workbook, sheet);
+        writeContent(sheet, tableDescription.getColumns(), fieldMapping);
+    }
+
+    private void writeHeaders(Workbook workbook, Sheet sheet) {
+
+        CellStyle headerStyle = workbook.createCellStyle();
+
+        XSSFFont font = ((XSSFWorkbook) workbook).createFont();
+        font.setFontName("Arial");
+        font.setFontHeightInPoints((short) 20);
+        font.setBold(true);
+        headerStyle.setFont(font);
+
+        Row headerRow = sheet.createRow(0);
+
+        for (HeaderType headerType : HeaderType.values()) {
+
+            int cellIndex = headerType.ordinal();
+
+            sheet.setColumnWidth(cellIndex, headerType.getWidth());
+
+            Cell headerCell = headerRow.createCell(cellIndex);
+
+            headerCell.setCellValue(headerType.getName());
+            headerCell.setCellStyle(headerStyle);
         }
     }
 
-    private static String resolveFiledTypeFromSQlType(String sqlType) {
+    private void writeContent(Sheet sheet, List<ColumnDescription> columns, Map<String, String> fieldMapping) {
 
-        switch (sqlType) {
-            case "timestamp":
-                return LocalDateTime.class.getSimpleName();
-            case "image":
-                return byte[].class.getSimpleName();
-            default:
-                return sqlType;
+        for (int index = 0; index < columns.size(); index++) {
+
+            Row row = sheet.createRow(index + 1); // 0: header row
+
+            for (HeaderType headerType : HeaderType.values()) {
+
+                int cellIndex = headerType.ordinal();
+
+                Cell rowCell = row.createCell(cellIndex);
+
+                ColumnDescription columnDescription = columns.get(index);
+
+                headerType.execute(rowCell, columnDescription, fieldMapping);
+            }
         }
     }
 }

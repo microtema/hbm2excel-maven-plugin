@@ -11,36 +11,37 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ExcelTemplateService {
 
-    public static boolean skipField(boolean isCommonClass, Set<String> commonFields, String name) {
-
-        if (isCommonClass) {
-            return !commonFields.contains(name);
-        } else return commonFields.contains(name);
-    }
-
     private final ExcelTemplate excelTemplate;
 
     public void writeTemplates(List<TableDescription> tableDescriptions, ProjectData projectData) {
 
         Set<String> commonColumns = getCommonColumns(tableDescriptions);
 
+        TableDescription commonTableDescription = null;
+
         if (!commonColumns.isEmpty()) {
 
             TableDescription tableDescription = tableDescriptions.get(0);
-            List<ColumnDescription> commonsColumns = tableDescription.getColumns().stream().filter(it -> commonColumns.contains(it.getName())).collect(Collectors.toList());
+            List<ColumnDescription> commonsColumns = tableDescription.getColumns()
+                    .stream()
+                    .filter(it -> commonColumns.contains(it.getName()))
+                    .collect(Collectors.toList());
 
-            tableDescription = new TableDescription();
-            tableDescription.setName("CommonEntity");
-            tableDescription.setColumns(commonsColumns);
-            excelTemplate.writeOutEntity(tableDescription, projectData);
+            commonTableDescription = new TableDescription();
+            commonTableDescription.setName("Common Fields");
+            commonTableDescription.setColumns(commonsColumns);
         }
 
         for (TableDescription tableDescription : tableDescriptions) {
 
             tableDescription.getColumns().removeIf(it -> commonColumns.contains(it.getName()));
-
-            excelTemplate.writeOutEntity(tableDescription, projectData);
         }
+
+        if (Objects.nonNull(commonTableDescription)) {
+            tableDescriptions.add(0, commonTableDescription);
+        }
+
+        excelTemplate.writeOut(tableDescriptions, projectData);
     }
 
     private Set<String> getCommonColumns(List<TableDescription> tableDescriptions) {

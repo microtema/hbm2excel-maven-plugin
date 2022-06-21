@@ -15,6 +15,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
+import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -49,6 +50,7 @@ public class Hbm2JavaGeneratorMojo extends AbstractMojo {
     public void execute() {
 
         String appName = Optional.ofNullable(project.getName()).orElse(project.getArtifactId());
+        String outputFilePath = outputDir + "/" + project.getArtifactId() + "-mapping.xlsx";
 
         // Skip maven sub modules
         if (tableNames.isEmpty()) {
@@ -58,7 +60,13 @@ public class Hbm2JavaGeneratorMojo extends AbstractMojo {
             return;
         }
 
-        logMessage("Generate Entities from DDL for " + appName + " -> " + outputDir);
+        File dir = new File(outputDir);
+
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        logMessage("Generate Excel from DDL for " + appName + " -> " + outputFilePath);
 
         DatabaseConfig databaseConfig = new DatabaseConfig();
 
@@ -82,7 +90,7 @@ public class Hbm2JavaGeneratorMojo extends AbstractMojo {
         ProjectData projectData = new ProjectData();
 
         projectData.setFieldMapping(streamConvert(fieldMapping));
-        projectData.setOutputDirectory(outputDir);
+        projectData.setOutputFile(outputFilePath);
 
         excelTemplateService.writeTemplates(tableDescriptions, projectData);
     }

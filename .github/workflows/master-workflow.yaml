@@ -2,14 +2,14 @@
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
 # Files under .github/workflows folder are generated and should not be edited. #
 ################################################################################
-name: 'hbm2java-maven-plugin Maven Mojo'
+name: 'hbm2excel-maven-plugin Maven Mojo'
 on:
   push:
     branches:
       - master
 env:
-  APP_NAME: "hbm2java-maven-plugin"
-  APP_DISPLAY_NAME: "hbm2java-maven-plugin Maven Mojo"
+  APP_NAME: "hbm2excel-maven-plugin"
+  APP_DISPLAY_NAME: "hbm2excel-maven-plugin Maven Mojo"
   GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
   SONAR_TOKEN: "d44e1870f40de9c4556bb1f507393396721e21aa"
   JAVA_VERSION: "1.8"
@@ -192,7 +192,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ steps.tag_version.outputs.new_tag }}
-          name: 'hbm2java-maven-plugin Maven Mojo Release ${{ steps.tag_version.outputs.new_tag }}'
+          name: 'hbm2excel-maven-plugin Maven Mojo Release ${{ steps.tag_version.outputs.new_tag }}'
           body: ${{ steps.tag_version.outputs.changelog }}
   publish:
     name: Publish
