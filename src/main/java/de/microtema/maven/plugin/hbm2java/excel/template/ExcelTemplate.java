@@ -6,6 +6,7 @@ import de.microtema.maven.plugin.hbm2java.model.ProjectData;
 import de.microtema.maven.plugin.hbm2java.model.TableDescription;
 import lombok.SneakyThrows;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -40,6 +41,9 @@ public class ExcelTemplate {
         Sheet sheet = workbook.createSheet(sheetName);
 
         writeHeaders(workbook, sheet);
+
+        writerColumnFilter(sheet);
+
         writeContent(sheet, tableDescription.getColumns(), fieldMapping);
     }
 
@@ -66,6 +70,11 @@ public class ExcelTemplate {
             headerCell.setCellValue(headerType.getName());
             headerCell.setCellStyle(headerStyle);
         }
+    }
+
+    private void writerColumnFilter(Sheet sheet) {
+        sheet.setAutoFilter(new CellRangeAddress(0, 0, 0, HeaderType.values().length));
+        sheet.createFreezePane(0, 1);
     }
 
     private void writeContent(Sheet sheet, List<ColumnDescription> columns, Map<String, String> fieldMapping) {

@@ -8,13 +8,13 @@ import java.util.Map;
 
 public enum HeaderType {
 
-    SOURCE_FIELD_NAME("Source Field Name", 20_000) {
+    SOURCE_FIELD_NAME("Source Field Name", 10_000) {
         @Override
         public void execute(Cell rowCell, ColumnDescription columnDescription, Map<String, String> fieldMapping) {
 
         }
     },
-    TARGET_FIELD_NAME("Target Field Name", 20_000) {
+    TARGET_FIELD_NAME("Target Field Name", 10_000) {
         @Override
         public void execute(Cell cell, ColumnDescription columnDescription, Map<String, String> fieldMapping) {
 

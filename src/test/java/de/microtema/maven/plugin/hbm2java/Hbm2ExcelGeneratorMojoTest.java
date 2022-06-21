@@ -45,7 +45,7 @@ class Hbm2ExcelGeneratorMojoTest {
 
         DatabaseConfig databaseConfig = new DatabaseConfig();
 
-        sut.tableNames = Arrays.asList("[SQL_A1_EDEBIT]", "[Versatel Germany$Customer]");
+        sut.tableNames = Arrays.asList("[MT$Customer]", "[DX$Customer]");
         sut.host = databaseConfig.getHost();
         sut.userName = databaseConfig.getUserName();
         sut.password = databaseConfig.getPassword();
