@@ -76,6 +76,7 @@ public class ExcelTemplate {
     }
 
     private void writerColumnFilter(Sheet sheet) {
+
         sheet.setAutoFilter(new CellRangeAddress(0, 0, 0, HeaderType.values().length));
         sheet.createFreezePane(0, 1);
     }
