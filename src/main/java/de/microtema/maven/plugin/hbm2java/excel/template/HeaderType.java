@@ -2,6 +2,7 @@ package de.microtema.maven.plugin.hbm2java.excel.template;
 
 import de.microtema.maven.plugin.hbm2java.MojoFileUtil;
 import de.microtema.maven.plugin.hbm2java.model.ColumnDescription;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 
 import java.util.Map;
@@ -14,7 +15,10 @@ public enum HeaderType {
 
             String columnName = columnDescription.getName();
 
-            String cellValue = fieldMapping.get(columnName);
+            String cellValue = fieldMapping.entrySet().stream()
+                    .filter(it -> StringUtils.equalsIgnoreCase(it.getValue(), columnName))
+                    .map(Map.Entry::getKey)
+                    .findFirst().orElse(null);
 
             cell.setCellValue(cellValue);
         }

@@ -40,6 +40,9 @@ public class Hbm2JavaGeneratorMojo extends AbstractMojo {
     @Parameter(property = "output-dir")
     String outputDir = "./Resources/mapping";
 
+    @Parameter(property = "input-file")
+    String inputFile;
+
     @Parameter(property = "field-mapping")
     Properties fieldMapping = new Properties();
 
@@ -56,6 +59,14 @@ public class Hbm2JavaGeneratorMojo extends AbstractMojo {
         if (tableNames.isEmpty()) {
 
             logMessage("Skip maven module: " + appName + " since it does not provide table name!");
+
+            return;
+        }
+
+        File file = new File(outputFilePath);
+        if (file.exists()) {
+
+            logMessage("Skip maven module: " + appName + " since " + file.getName() + " already exist!");
 
             return;
         }
@@ -89,10 +100,24 @@ public class Hbm2JavaGeneratorMojo extends AbstractMojo {
 
         ProjectData projectData = new ProjectData();
 
-        projectData.setFieldMapping(streamConvert(fieldMapping));
+        projectData.setFieldMapping(getFieldMappings());
         projectData.setOutputFile(outputFilePath);
 
         excelTemplateService.writeTemplates(tableDescriptions, projectData);
+    }
+
+    private Map<String, String> getFieldMappings() {
+
+        Map<String, String> fieldMappings = streamConvert(fieldMapping);
+
+        if (Objects.nonNull(inputFile)) {
+
+            Map<String, String> fieldMappings2 = excelTemplateService.getFieldMappings(inputFile);
+
+            fieldMappings.putAll(fieldMappings2);
+        }
+
+        return fieldMappings;
     }
 
     public Map<String, String> streamConvert(Properties prop) {
