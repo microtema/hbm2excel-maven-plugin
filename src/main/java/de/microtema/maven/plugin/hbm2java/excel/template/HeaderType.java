@@ -10,19 +10,20 @@ public enum HeaderType {
 
     SOURCE_FIELD_NAME("Source Field Name", 20_000) {
         @Override
-        public void execute(Cell rowCell, ColumnDescription columnDescription, Map<String, String> fieldMapping) {
+        public void execute(Cell cell, ColumnDescription columnDescription, Map<String, String> fieldMapping) {
 
+            String columnName = columnDescription.getName();
+
+            String cellValue = fieldMapping.get(columnName);
+
+            cell.setCellValue(cellValue);
         }
     },
     TARGET_FIELD_NAME("Target Field Name", 10_000) {
         @Override
         public void execute(Cell cell, ColumnDescription columnDescription, Map<String, String> fieldMapping) {
 
-            String columnName = columnDescription.getName();
-
-            String cellValue = fieldMapping.getOrDefault(columnName, columnName);
-
-            cell.setCellValue(cellValue);
+            cell.setCellValue(columnDescription.getName());
         }
     },
     TYPE("Type", 5_000) {
