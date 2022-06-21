@@ -7,7 +7,6 @@ import de.microtema.maven.plugin.hbm2java.model.TableDescription;
 import lombok.SneakyThrows;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.FileOutputStream;
@@ -36,6 +35,7 @@ public class ExcelTemplate {
 
     private void writeOutImpl(Workbook workbook, TableDescription tableDescription, Map<String, String> fieldMapping) {
 
+        List<ColumnDescription> columns = tableDescription.getColumns();
         String sheetName = MojoFileUtil.cleanupTableName(tableDescription.getName());
 
         Sheet sheet = workbook.createSheet(sheetName);
@@ -44,17 +44,20 @@ public class ExcelTemplate {
 
         writerColumnFilter(sheet);
 
-        writeContent(sheet, tableDescription.getColumns(), fieldMapping);
+        writeContent(sheet, columns, fieldMapping);
+
+        createConditionalFormatting(sheet, columns.size());
     }
 
     private void writeHeaders(Workbook workbook, Sheet sheet) {
 
         CellStyle headerStyle = workbook.createCellStyle();
 
-        XSSFFont font = ((XSSFWorkbook) workbook).createFont();
-        font.setFontName("Arial");
+        Font font = workbook.createFont();
+        font.setFontName("Calibri");
         font.setFontHeightInPoints((short) 20);
         font.setBold(true);
+
         headerStyle.setFont(font);
 
         Row headerRow = sheet.createRow(0);
@@ -79,6 +82,14 @@ public class ExcelTemplate {
 
     private void writeContent(Sheet sheet, List<ColumnDescription> columns, Map<String, String> fieldMapping) {
 
+        CellStyle cellStyle = sheet.getWorkbook().createCellStyle();
+
+        Font font = sheet.getWorkbook().createFont();
+        font.setFontName("Calibri");
+        font.setFontHeightInPoints((short) 18);
+
+        cellStyle.setFont(font);
+
         for (int index = 0; index < columns.size(); index++) {
 
             Row row = sheet.createRow(index + 1); // 0: header row
@@ -89,10 +100,40 @@ public class ExcelTemplate {
 
                 Cell rowCell = row.createCell(cellIndex);
 
+                rowCell.setCellStyle(cellStyle);
+
                 ColumnDescription columnDescription = columns.get(index);
 
                 headerType.execute(rowCell, columnDescription, fieldMapping);
             }
         }
+    }
+
+    private void createConditionalFormatting(Sheet sheet, int rowSize) {
+
+        SheetConditionalFormatting conditionalFormatting = sheet.getSheetConditionalFormatting();
+
+        // Header formatting
+        ConditionalFormattingRule formattingRule = conditionalFormatting.createConditionalFormattingRule("MOD(ROW() - 1, 1) = 0");
+
+        PatternFormatting patternFormatting = formattingRule.createPatternFormatting();
+        patternFormatting.setFillBackgroundColor(IndexedColors.BLUE_GREY.index);
+        patternFormatting.setFillPattern(PatternFormatting.SOLID_FOREGROUND);
+
+        FontFormatting fontFormatting = formattingRule.createFontFormatting();
+        fontFormatting.setFontColorIndex(IndexedColors.WHITE.index);
+
+        CellRangeAddress[] regions = {CellRangeAddress.valueOf("A1:H1")};
+        conditionalFormatting.addConditionalFormatting(regions, formattingRule);
+
+        // rows formatting
+        formattingRule = conditionalFormatting.createConditionalFormattingRule("MOD(ROW() - 1, 2) = 0");
+
+        patternFormatting = formattingRule.createPatternFormatting();
+        patternFormatting.setFillBackgroundColor(IndexedColors.GREY_25_PERCENT.index);
+        patternFormatting.setFillPattern(PatternFormatting.SOLID_FOREGROUND);
+
+        CellRangeAddress[] regions1 = {CellRangeAddress.valueOf("A1:H" + (rowSize + 2))};
+        conditionalFormatting.addConditionalFormatting(regions1, formattingRule);
     }
 }
