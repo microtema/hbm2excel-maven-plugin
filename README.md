@@ -1,17 +1,21 @@
 # DDL to Excel Beans Generator
+
 Reducing Boilerplate Code with hbm2excel maven plugin
-> More Time for Feature and functionality
-  Through a simple set of hbm2excel-maven-plugin templates and saving 60% of development time 
+> More Time for Feature and functionality Through a simple set of hbm2excel-maven-plugin templates and saving 60% of development time
 
 ## Key Features
+
 * Auto generation by maven compile phase
 * Auto detection commons fields
 * Generate Excel Sheet Workbook file
 * Custom Field mapping
 
+![Workbook](Resources/workbook.png)
+
 ## How to use
 
 ### Maven configuration
+
 ```
 <plugin>
     <groupId>de.microtema</groupId>
