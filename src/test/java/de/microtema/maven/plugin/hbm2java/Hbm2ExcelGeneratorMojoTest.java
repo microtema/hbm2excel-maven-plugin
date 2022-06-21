@@ -12,6 +12,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.File;
 import java.util.Arrays;
 
+import static junit.framework.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -24,7 +26,7 @@ class Hbm2ExcelGeneratorMojoTest {
     @Mock
     MavenProject project;
 
-    File outputSpecFile;
+    File outputDir;
 
     @BeforeEach
     void setUp() {
@@ -39,7 +41,7 @@ class Hbm2ExcelGeneratorMojoTest {
 
         sut.outputDir = "./target/Resources/mapping";
 
-        outputSpecFile = new File(sut.outputDir);
+        outputDir = new File(sut.outputDir);
 
         sut.project = project;
 
@@ -52,6 +54,17 @@ class Hbm2ExcelGeneratorMojoTest {
 
         sut.execute();
 
-        assertTrue(outputSpecFile.exists());
+        assertTrue(outputDir.exists());
+        File[] files = outputDir.listFiles();
+        assertNotNull(files);
+        assertEquals(1, files.length);
+        File file = files[0];
+        // Load Workbook from file/resource
+        // Get Sheets from Workbook
+        // Assert Sheets number against Table Names +1 (for Commons)
+        // For each Sheet assert Sheet Name against Table Name (needs to be cleaned up)
+        // For First Sheet (Commons) assert Headers against HeaderTypes
+
+
     }
 }
