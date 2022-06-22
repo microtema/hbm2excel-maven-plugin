@@ -47,7 +47,7 @@ public enum HeaderType {
         @Override
         public void execute(Cell cell, ColumnDescription columnDescription, Map<String, String> fieldMapping) {
 
-            if (columnDescription.isRequired()) {
+            if (!columnDescription.isRequired()) {
                 cell.setCellValue("Yes");
             }
         }
