@@ -15,11 +15,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.Optional;
 
 import static junit.framework.Assert.assertNotNull;
+import static org.apache.maven.artifact.ArtifactScopeEnum.system;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
@@ -66,15 +70,84 @@ class Hbm2ExcelGeneratorMojoTest {
         sut.password = databaseConfig.getPassword();
 
         sut.execute();
-
+        // Check if file and path exist
         assertTrue(outputDir.exists());
-        File[] files = outputDir.listFiles();
+        FileFilter fileFilter = file -> !file.isDirectory() && file.getName()
+                .contains("customer");
+        File[] files = outputDir.listFiles(fileFilter);
         assertNotNull(files);
         assertEquals(1, files.length);
-        assertNotNull(files[0]);
-        FileInputStream file = new FileInputStream(files[0]);
+        File file = files[0];
+        assertTrue(file.isFile());
+        FileInputStream fileInputStream = new FileInputStream(file);
         // Load Workbook from file/resource
-        Workbook workbook = new XSSFWorkbook(file);
+        Workbook workbook = new XSSFWorkbook(fileInputStream);
+        // Get Sheets from Workbook
+        // Assert Sheets number against Table Names +1 (for Commons)
+        assertEquals(workbook.getNumberOfSheets(), sut.tableNames.size()+1);
+
+        // For each Sheet assert Sheet Name against Table Name (needs to be cleaned up)
+        int index = 0;
+        while(index++ < sut.tableNames.size()){
+            String cleanedTableName = MojoFileUtil.cleanupTableName(sut.tableNames.get(index-1));
+            assertNotNull(workbook.getSheet(cleanedTableName));
+            assertEquals(workbook.getSheetAt(index).getSheetName(), cleanedTableName);
+        }
+
+        // For First Sheet (Commons) assert Headers against HeaderTypes
+        Sheet firstSheet = workbook.getSheetAt(0);
+        Row headerRow = firstSheet.getRow(0);
+
+        assertEquals(headerRow.getLastCellNum(), HeaderType.values().length);
+
+        int cellIndex = 0;
+        while (cellIndex < headerRow.getLastCellNum()-1) {
+            String cellValue = headerRow.getCell(cellIndex).getStringCellValue();
+            String headerTypeValue = HeaderType.values()[cellIndex].getName();
+            assertEquals(cellValue, headerTypeValue);
+            cellIndex++;
+        }
+
+    }
+
+    @Test
+    void createAndTestContractMapping() throws IOException {
+
+        when(project.getArtifactId()).thenReturn("contract");
+
+        sut.outputDir = "./target/Resources/mapping";
+
+        outputDir = new File(sut.outputDir);
+
+        sut.project = project;
+
+        DatabaseConfig databaseConfig = new DatabaseConfig();
+
+        sut.tableNames = Arrays.asList(
+                "[SQL_A1_EDEBIT$Contract]",
+                "[Versatel Germany$Contract]",
+                "[VTB_EC$Contract]",
+                "[tesion GmbH$Contract]",
+                "[KomTel GmbH$Contract]",
+                "[VTW_EC$Contract]");
+        sut.host = databaseConfig.getHost();
+        sut.userName = databaseConfig.getUserName();
+        sut.password = databaseConfig.getPassword();
+
+        sut.execute();
+
+        // Check if file and path exist
+        assertTrue(outputDir.exists());
+        FileFilter fileFilter = file -> !file.isDirectory() && file.getName()
+                .contains("contract");
+        File[] files = outputDir.listFiles(fileFilter);
+        assertNotNull(files);
+        assertEquals(1, files.length);
+        File file = files[0];
+        assertTrue(file.isFile());
+        FileInputStream fileInputStream = new FileInputStream(file);
+        // Load Workbook from file/resource
+        Workbook workbook = new XSSFWorkbook(fileInputStream);
         // Get Sheets from Workbook
         // Assert Sheets number against Table Names +1 (for Commons)
         assertEquals(workbook.getNumberOfSheets(), sut.tableNames.size()+1);
