@@ -175,4 +175,69 @@ class Hbm2ExcelGeneratorMojoTest {
         }
 
     }
+
+    @Test
+    void createAndTestCallNumberMapping() throws IOException {
+
+        when(project.getArtifactId()).thenReturn("call_number");
+
+        sut.outputDir = "./target/Resources/mapping";
+
+        outputDir = new File(sut.outputDir);
+
+        sut.project = project;
+
+        DatabaseConfig databaseConfig = new DatabaseConfig();
+
+        sut.tableNames = Arrays.asList(
+                "[SQL_A1_EDEBIT$Call Number]",
+                "[Versatel Germany$Call Number]",
+                "[VTB_EC$Call Number]",
+                "[tesion GmbH$Call Number]",
+                "[KomTel GmbH$Call Number]",
+                "[VTW_EC$Call Number]");
+        sut.host = databaseConfig.getHost();
+        sut.userName = databaseConfig.getUserName();
+        sut.password = databaseConfig.getPassword();
+
+        sut.execute();
+        // Check if file and path exist
+        assertTrue(outputDir.exists());
+        FileFilter fileFilter = file -> !file.isDirectory() && file.getName()
+                .contains("call_number");
+        File[] files = outputDir.listFiles(fileFilter);
+        assertNotNull(files);
+        assertEquals(1, files.length);
+        File file = files[0];
+        assertTrue(file.isFile());
+        FileInputStream fileInputStream = new FileInputStream(file);
+        // Load Workbook from file/resource
+        Workbook workbook = new XSSFWorkbook(fileInputStream);
+        // Get Sheets from Workbook
+        // Assert Sheets number against Table Names +1 (for Commons)
+        assertEquals(workbook.getNumberOfSheets(), sut.tableNames.size()+1);
+
+        // For each Sheet assert Sheet Name against Table Name (needs to be cleaned up)
+        int index = 0;
+        while(index++ < sut.tableNames.size()){
+            String cleanedTableName = MojoFileUtil.cleanupTableName(sut.tableNames.get(index-1));
+            assertNotNull(workbook.getSheet(cleanedTableName));
+            assertEquals(workbook.getSheetAt(index).getSheetName(), cleanedTableName);
+        }
+
+        // For First Sheet (Commons) assert Headers against HeaderTypes
+        Sheet firstSheet = workbook.getSheetAt(0);
+        Row headerRow = firstSheet.getRow(0);
+
+        assertEquals(headerRow.getLastCellNum(), HeaderType.values().length);
+
+        int cellIndex = 0;
+        while (cellIndex < headerRow.getLastCellNum()-1) {
+            String cellValue = headerRow.getCell(cellIndex).getStringCellValue();
+            String headerTypeValue = HeaderType.values()[cellIndex].getName();
+            assertEquals(cellValue, headerTypeValue);
+            cellIndex++;
+        }
+
+    }
 }
