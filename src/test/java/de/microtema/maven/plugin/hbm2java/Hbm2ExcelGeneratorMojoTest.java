@@ -3,7 +3,6 @@ package de.microtema.maven.plugin.hbm2java;
 import de.microtema.maven.plugin.hbm2java.excel.template.HeaderType;
 import de.microtema.maven.plugin.hbm2java.model.DatabaseConfig;
 import org.apache.maven.project.MavenProject;
-import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -17,7 +16,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -44,7 +42,7 @@ class Hbm2ExcelGeneratorMojoTest {
     }
 
     @Test
-    void executeOnNonUpdateFalse() throws IOException {
+    void createAndTestCustomerMapping() throws IOException {
 
         when(project.getArtifactId()).thenReturn("customer");
 
@@ -56,7 +54,13 @@ class Hbm2ExcelGeneratorMojoTest {
 
         DatabaseConfig databaseConfig = new DatabaseConfig();
 
-        sut.tableNames = Arrays.asList("[SQL_A1_EDEBIT]", "[Versatel Germany$Customer]");
+        sut.tableNames = Arrays.asList(
+                "[SQL_A1_EDEBIT]",
+                "[Versatel Germany$Customer]",
+                "[VTB_EC$Customer]",
+                "[tesion GmbH$Customer]",
+                "[KomTel GmbH$Customer]",
+                "[VTW_EC$Customer]");
         sut.host = databaseConfig.getHost();
         sut.userName = databaseConfig.getUserName();
         sut.password = databaseConfig.getPassword();
