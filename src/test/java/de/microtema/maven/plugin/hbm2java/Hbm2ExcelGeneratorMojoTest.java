@@ -243,22 +243,24 @@ class Hbm2ExcelGeneratorMojoTest {
 
     }
 
-    void createAndTestFeeDetailsMapping() throws IOException {
+    //@Test // Disabled until sheet name character limit issue can be resolved
+    void createAndTestConnectionPointMapping() throws IOException {
 
-        when(project.getArtifactId()).thenReturn("fee_details");
+        when(project.getArtifactId()).thenReturn("connection_point");
 
         outputDir = new File(sut.outputDir);
 
         sut.tableNames = Arrays.asList(
-                "[SQL_A1_EDEBIT$Fee Details]",
-                "[Versatel Germany$Fee Details]",
-                "[VTB_EC$Fee Details]",
-                "[tesion GmbH$Fee Details]",
-                "[KomTel GmbH$Fee Details]",
-                "[VTW_EC$Fee Details]");
+                "[SQL_A1_EDEBIT$Connection Details]",
+                "[Versatel Germany$Connection Details]",
+                "[VTB_EC$Connection Details]",
+                "[tesion GmbH$Connection Details]",
+                "[KomTel GmbH$Connection Details]",
+                "[VTW_EC$Connection Details]");
 
         sut.execute();
-        TestFileAndMapping("fee_details", outputDir);
+        // Fails because sheet names are limited to 31 characters and this limit is exceeded by "[Versatel Germany$Connection Details]"
+        TestFileAndMapping("connection_point", outputDir);
 
     }
 
