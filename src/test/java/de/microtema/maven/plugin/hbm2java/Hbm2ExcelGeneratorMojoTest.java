@@ -224,6 +224,25 @@ class Hbm2ExcelGeneratorMojoTest {
     }
 
     @Test
+    void createAndTestCreditDetailMapping() throws IOException {
+
+        when(project.getArtifactId()).thenReturn("credit_detail");
+
+        outputDir = new File(sut.outputDir);
+
+        sut.tableNames = Arrays.asList(
+                "[SQL_A1_EDEBIT$Fee Details]",
+                "[Versatel Germany$Fee Details]",
+                "[VTB_EC$Fee Details]",
+                "[tesion GmbH$Fee Details]",
+                "[KomTel GmbH$Fee Details]",
+                "[VTW_EC$Fee Details]");
+
+        sut.execute();
+        TestFileAndMapping("credit_detail", outputDir);
+
+    }
+
     void createAndTestFeeDetailsMapping() throws IOException {
 
         when(project.getArtifactId()).thenReturn("fee_details");
