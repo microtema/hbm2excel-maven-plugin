@@ -203,6 +203,46 @@ class Hbm2ExcelGeneratorMojoTest {
         TestFileAndMapping("fee", outputDir);
     }
 
+    //@Test // Disabled because Table is missing
+    void createAndTestCreditMapping() throws IOException {
+
+        when(project.getArtifactId()).thenReturn("credit");
+
+        outputDir = new File(sut.outputDir);
+
+        sut.tableNames = Arrays.asList(
+                "[SQL_A1_EDEBIT$Gutschrift Monitoring]",
+                "[Versatel Germany$Gutschrift Monitoring]",
+                "[VTB_EC$Gutschrift Monitoring]",
+                "[tesion GmbH$Gutschrift Monitoring]",
+                "[KomTel GmbH$Gutschrift Monitoring]",
+                "[VTW_EC$Gutschrift Monitoring]");
+
+        sut.execute();
+        TestFileAndMapping("credit", outputDir);
+
+    }
+
+    @Test
+    void createAndTestFeeDetailsMapping() throws IOException {
+
+        when(project.getArtifactId()).thenReturn("fee_details");
+
+        outputDir = new File(sut.outputDir);
+
+        sut.tableNames = Arrays.asList(
+                "[SQL_A1_EDEBIT$Fee Details]",
+                "[Versatel Germany$Fee Details]",
+                "[VTB_EC$Fee Details]",
+                "[tesion GmbH$Fee Details]",
+                "[KomTel GmbH$Fee Details]",
+                "[VTW_EC$Fee Details]");
+
+        sut.execute();
+        TestFileAndMapping("fee_details", outputDir);
+
+    }
+
     void TestFileAndMapping(String serviceName, File outputDir) throws IOException {
         // Check if file and path exist
         assertTrue(outputDir.exists());
