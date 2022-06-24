@@ -52,9 +52,8 @@ public class ExcelTemplate {
         font.setFontHeightInPoints((short) 20);
         font.setBold(true);
         headerStyle.setFont(font);
-
+        sheet.createFreezePane(0,1);
         Row headerRow = sheet.createRow(0);
-
         for (HeaderType headerType : HeaderType.values()) {
 
             int cellIndex = headerType.ordinal();
