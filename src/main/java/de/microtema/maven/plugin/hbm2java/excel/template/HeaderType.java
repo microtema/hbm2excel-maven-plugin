@@ -2,6 +2,7 @@ package de.microtema.maven.plugin.hbm2java.excel.template;
 
 import de.microtema.maven.plugin.hbm2java.MojoFileUtil;
 import de.microtema.maven.plugin.hbm2java.model.ColumnDescription;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 
 import java.util.Map;
@@ -51,7 +52,7 @@ public enum HeaderType {
         @Override
         public void execute(Cell cell, ColumnDescription columnDescription, Map<String, String> fieldMapping) {
 
-            if (columnDescription.isRequired()) {
+            if (!columnDescription.isRequired()) {
                 cell.setCellValue("Yes");
             }
         }
