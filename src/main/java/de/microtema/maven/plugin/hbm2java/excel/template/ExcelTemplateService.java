@@ -4,7 +4,15 @@ import de.microtema.maven.plugin.hbm2java.model.ColumnDescription;
 import de.microtema.maven.plugin.hbm2java.model.ProjectData;
 import de.microtema.maven.plugin.hbm2java.model.TableDescription;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -75,5 +83,27 @@ public class ExcelTemplateService {
         column2Table.entrySet().removeIf(it -> it.getValue().size() != tableDescriptions.size());
 
         return column2Table.keySet();
+    }
+
+    @SneakyThrows
+    public Map<String, String> getFieldMappings(String inputFile) {
+
+        Map<String, String> fieldMapping = new HashMap<>();
+
+        InputStream inputStream = new FileInputStream(inputFile);
+
+        Workbook workbook = new XSSFWorkbook(inputStream);
+
+        Sheet sheet = workbook.getSheetAt(0);
+
+        for (Row row : sheet) {
+
+            Cell cell1 = row.getCell(0);
+            Cell cell2 = row.getCell(1);
+
+            fieldMapping.put(cell1.getStringCellValue(), cell2.getStringCellValue());
+        }
+
+        return fieldMapping;
     }
 }

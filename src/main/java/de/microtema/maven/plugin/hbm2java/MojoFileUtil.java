@@ -1,5 +1,6 @@
 package de.microtema.maven.plugin.hbm2java;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -7,7 +8,7 @@ public class MojoFileUtil {
 
     public static String cleanupTableName(String tableName) {
 
-        return tableName.replace("[", "").replace("]", "");
+        return tableName.replace("[", "").replace("]", "").replaceAll(File.separator, "");
     }
 
     public static String resolveFiledType(String javaType, String sqlType) {

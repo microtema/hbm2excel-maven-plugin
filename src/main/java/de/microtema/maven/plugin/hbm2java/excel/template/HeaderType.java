@@ -8,21 +8,25 @@ import java.util.Map;
 
 public enum HeaderType {
 
-    SOURCE_FIELD_NAME("Source Field Name", 15_000) {
-        @Override
-        public void execute(Cell rowCell, ColumnDescription columnDescription, Map<String, String> fieldMapping) {
-
-        }
-    },
-    TARGET_FIELD_NAME("Target Field Name", 15_000) {
+    SOURCE_FIELD_NAME("Source Field Name", 20_000) {
         @Override
         public void execute(Cell cell, ColumnDescription columnDescription, Map<String, String> fieldMapping) {
 
-            String columnName = "[" + columnDescription.getName() + "]";
+            String columnName = columnDescription.getName();
 
-            String cellValue = fieldMapping.getOrDefault(columnName, columnName);
+            String cellValue = fieldMapping.entrySet().stream()
+                    .filter(it -> StringUtils.equalsIgnoreCase(it.getValue(), columnName))
+                    .map(Map.Entry::getKey)
+                    .findFirst().orElse(null);
 
             cell.setCellValue(cellValue);
+        }
+    },
+    TARGET_FIELD_NAME("Target Field Name", 10_000) {
+        @Override
+        public void execute(Cell cell, ColumnDescription columnDescription, Map<String, String> fieldMapping) {
+
+            cell.setCellValue(columnDescription.getName());
         }
     },
     TYPE("Type", 5_000) {
@@ -34,7 +38,7 @@ public enum HeaderType {
             cell.setCellValue(cellValue);
         }
     },
-    PRIMARY_KEY("Primary Key", 5_000) {
+    PRIMARY_KEY("Primary Key", 6_000) {
         @Override
         public void execute(Cell cell, ColumnDescription columnDescription, Map<String, String> fieldMapping) {
 
@@ -47,7 +51,7 @@ public enum HeaderType {
         @Override
         public void execute(Cell cell, ColumnDescription columnDescription, Map<String, String> fieldMapping) {
 
-            if (!columnDescription.isRequired()) {
+            if (columnDescription.isRequired()) {
                 cell.setCellValue("Yes");
             }
         }

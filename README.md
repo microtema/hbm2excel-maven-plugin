@@ -1,17 +1,21 @@
 # DDL to Excel Beans Generator
+
 Reducing Boilerplate Code with hbm2excel maven plugin
-> More Time for Feature and functionality
-  Through a simple set of hbm2excel-maven-plugin templates and saving 60% of development time 
+> More Time for Feature and functionality Through a simple set of hbm2excel-maven-plugin templates and saving 60% of development time
 
 ## Key Features
+
 * Auto generation by maven compile phase
-* Auto detection commons classes
-* Generate lombok based java beans templates
+* Auto detection commons fields
+* Generate Excel Sheet Workbook file
 * Custom Field mapping
+
+![Workbook](Resources/workbook.png)
 
 ## How to use
 
 ### Maven configuration
+
 ```
 <plugin>
     <groupId>de.microtema</groupId>
@@ -33,7 +37,7 @@ Reducing Boilerplate Code with hbm2excel maven plugin
     </configuration>
     <executions>
         <execution>
-            <id>hbm2java</id>
+            <id>hbm2excel</id>
             <phase>validate</phase>
             <goals>
                 <goal>generate</goal>
@@ -44,31 +48,8 @@ Reducing Boilerplate Code with hbm2excel maven plugin
 ```
 
 ## Output 
-* ./target/generated/src/main/de/microtema/repository/PrivateCustomerEntity.java.template
-* ./target/generated/src/main/de/microtema/repository/BusinessCustomerEntity.java.template
-* ./target/generated/src/main/de/microtema/repository/CustomerEntity.java.template
 
-> NOTE: This is an example file.
-
-```
-    @Column(name = "[vts]", nullable = false)
-    private String vts;
-```
-
-```
-    @Column(name = "[vtg]", nullable = false)
-    private String vtg;
-```
-
-```
-    @Column(name = "[id_]", nullable = false)
-    private String id;
-
-    @Column(name = "[address]", nullable = false)
-    private String address;
-
-    ...
-```
+* ./target/Resources/mapping/customer-mapping.xlxs
     
 ## Technology Stack
 

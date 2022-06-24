@@ -6,16 +6,12 @@ import de.microtema.maven.plugin.hbm2java.model.ProjectData;
 import de.microtema.maven.plugin.hbm2java.model.TableDescription;
 import lombok.SneakyThrows;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.DefaultIndexedColorMap;
-import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.FileOutputStream;
 import java.util.List;
 import java.util.Map;
-
-import static org.apache.poi.ss.usermodel.Color.*;
 
 
 public class ExcelTemplate {
@@ -42,15 +38,21 @@ public class ExcelTemplate {
         String sheetName = MojoFileUtil.cleanupTableName(tableDescription.getName());
 
         Sheet sheet = workbook.createSheet(sheetName);
-        sheet.createFreezePane(0,1);
-        CellStyle headerStyle = createHeaderStyle(workbook);
-        writeHeaders(workbook, sheet, headerStyle);
-        CellStyle contentStyle = createContentStyle(workbook);
-        writeContent(sheet, tableDescription.getColumns(), fieldMapping, contentStyle);
+
+        writeHeaders(workbook, sheet);
+        writeContent(sheet, tableDescription.getColumns(), fieldMapping);
     }
 
+    private void writeHeaders(Workbook workbook, Sheet sheet) {
 
-    private void writeHeaders(Workbook workbook, Sheet sheet, CellStyle style) {
+        CellStyle headerStyle = workbook.createCellStyle();
+
+        XSSFFont font = ((XSSFWorkbook) workbook).createFont();
+        font.setFontName("Arial");
+        font.setFontHeightInPoints((short) 20);
+        font.setBold(true);
+        headerStyle.setFont(font);
+
         Row headerRow = sheet.createRow(0);
 
         for (HeaderType headerType : HeaderType.values()) {
@@ -62,11 +64,12 @@ public class ExcelTemplate {
             Cell headerCell = headerRow.createCell(cellIndex);
 
             headerCell.setCellValue(headerType.getName());
-            headerCell.setCellStyle(style);
+            headerCell.setCellStyle(headerStyle);
         }
     }
 
-    private void writeContent(Sheet sheet, List<ColumnDescription> columns, Map<String, String> fieldMapping, CellStyle style) {
+    private void writeContent(Sheet sheet, List<ColumnDescription> columns, Map<String, String> fieldMapping) {
+
         for (int index = 0; index < columns.size(); index++) {
 
             Row row = sheet.createRow(index + 1); // 0: header row
@@ -76,37 +79,11 @@ public class ExcelTemplate {
                 int cellIndex = headerType.ordinal();
 
                 Cell rowCell = row.createCell(cellIndex);
-                rowCell.setCellStyle(style);
+
                 ColumnDescription columnDescription = columns.get(index);
 
                 headerType.execute(rowCell, columnDescription, fieldMapping);
             }
         }
-    }
-
-    private CellStyle createHeaderStyle(Workbook workbook){
-        CellStyle headerStyle = workbook.createCellStyle();
-
-        XSSFFont font = ((XSSFWorkbook) workbook).createFont();
-        font.setFontName("Arial");
-        font.setFontHeightInPoints((short) 18);
-        font.setBold(true);
-        font.setColor(IndexedColors.WHITE.getIndex());
-
-        headerStyle.setFont(font);
-        headerStyle.setFillBackgroundColor(IndexedColors.BLACK.getIndex());
-        headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-
-        return headerStyle;
-    }
-
-    private CellStyle createContentStyle(Workbook workbook) {
-        CellStyle contentStyle = workbook.createCellStyle();
-
-        XSSFFont font = ((XSSFWorkbook) workbook).createFont();
-        font.setFontName("Arial");
-        font.setFontHeightInPoints((short) 12);
-        contentStyle.setFont(font);
-        return contentStyle;
     }
 }
