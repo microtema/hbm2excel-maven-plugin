@@ -66,43 +66,8 @@ class Hbm2ExcelGeneratorMojoTest {
 
 
         sut.execute();
-        // Check if file and path exist
-        assertTrue(outputDir.exists());
-        FileFilter fileFilter = file -> !file.isDirectory() && file.getName()
-                .contains("customer");
-        File[] files = outputDir.listFiles(fileFilter);
-        assertNotNull(files);
-        assertEquals(1, files.length);
-        File file = files[0];
-        assertTrue(file.isFile());
-        FileInputStream fileInputStream = new FileInputStream(file);
-        // Load Workbook from file/resource
-        Workbook workbook = new XSSFWorkbook(fileInputStream);
-        // Get Sheets from Workbook
-        // Assert Sheets number against Table Names +1 (for Commons)
-        assertEquals(workbook.getNumberOfSheets(), sut.tableNames.size()+1);
 
-        // For each Sheet assert Sheet Name against Table Name (needs to be cleaned up)
-        int index = 0;
-        while(index++ < sut.tableNames.size()){
-            String cleanedTableName = MojoFileUtil.cleanupTableName(sut.tableNames.get(index-1));
-            assertNotNull(workbook.getSheet(cleanedTableName));
-            assertEquals(workbook.getSheetAt(index).getSheetName(), cleanedTableName);
-        }
-
-        // For First Sheet (Commons) assert Headers against HeaderTypes
-        Sheet firstSheet = workbook.getSheetAt(0);
-        Row headerRow = firstSheet.getRow(0);
-
-        assertEquals(headerRow.getLastCellNum(), HeaderType.values().length);
-
-        int cellIndex = 0;
-        while (cellIndex < headerRow.getLastCellNum()-1) {
-            String cellValue = headerRow.getCell(cellIndex).getStringCellValue();
-            String headerTypeValue = HeaderType.values()[cellIndex].getName();
-            assertEquals(cellValue, headerTypeValue);
-            cellIndex++;
-        }
+        TestFileAndMapping("customer", outputDir);
 
     }
 
@@ -123,44 +88,7 @@ class Hbm2ExcelGeneratorMojoTest {
 
         sut.execute();
 
-        // Check if file and path exist
-        assertTrue(outputDir.exists());
-        FileFilter fileFilter = file -> !file.isDirectory() && file.getName()
-                .contains("contract");
-        File[] files = outputDir.listFiles(fileFilter);
-        assertNotNull(files);
-        assertEquals(1, files.length);
-        File file = files[0];
-        assertTrue(file.isFile());
-        FileInputStream fileInputStream = new FileInputStream(file);
-        // Load Workbook from file/resource
-        Workbook workbook = new XSSFWorkbook(fileInputStream);
-        // Get Sheets from Workbook
-        // Assert Sheets number against Table Names +1 (for Commons)
-        assertEquals(workbook.getNumberOfSheets(), sut.tableNames.size()+1);
-
-        // For each Sheet assert Sheet Name against Table Name (needs to be cleaned up)
-        int index = 0;
-        while(index++ < sut.tableNames.size()){
-            String cleanedTableName = MojoFileUtil.cleanupTableName(sut.tableNames.get(index-1));
-            assertNotNull(workbook.getSheet(cleanedTableName));
-            assertEquals(workbook.getSheetAt(index).getSheetName(), cleanedTableName);
-        }
-
-        // For First Sheet (Commons) assert Headers against HeaderTypes
-        Sheet firstSheet = workbook.getSheetAt(0);
-        Row headerRow = firstSheet.getRow(0);
-
-        assertEquals(headerRow.getLastCellNum(), HeaderType.values().length);
-
-        int cellIndex = 0;
-        while (cellIndex < headerRow.getLastCellNum()-1) {
-            String cellValue = headerRow.getCell(cellIndex).getStringCellValue();
-            String headerTypeValue = HeaderType.values()[cellIndex].getName();
-            assertEquals(cellValue, headerTypeValue);
-            cellIndex++;
-        }
-
+        TestFileAndMapping("contract", outputDir);
     }
 
     @Test
@@ -180,7 +108,6 @@ class Hbm2ExcelGeneratorMojoTest {
 
         sut.execute();
         TestFileAndMapping("call_number", outputDir);
-
     }
 
     //@Test // Disabled until sheet name character limit issue can be resolved
@@ -243,22 +170,86 @@ class Hbm2ExcelGeneratorMojoTest {
 
     }
 
-    void createAndTestFeeDetailsMapping() throws IOException {
+    //@Test // Disabled until sheet name character limit issue can be resolved
+    void createAndTestConnectionPointMapping() throws IOException {
 
-        when(project.getArtifactId()).thenReturn("fee_details");
+        when(project.getArtifactId()).thenReturn("connection_point");
 
         outputDir = new File(sut.outputDir);
 
         sut.tableNames = Arrays.asList(
-                "[SQL_A1_EDEBIT$Fee Details]",
-                "[Versatel Germany$Fee Details]",
-                "[VTB_EC$Fee Details]",
-                "[tesion GmbH$Fee Details]",
-                "[KomTel GmbH$Fee Details]",
-                "[VTW_EC$Fee Details]");
+                "[SQL_A1_EDEBIT$Connection Details]",
+                "[Versatel Germany$Connection Details]",
+                "[VTB_EC$Connection Details]",
+                "[tesion GmbH$Connection Details]",
+                "[KomTel GmbH$Connection Details]",
+                "[VTW_EC$Connection Details]");
 
         sut.execute();
-        TestFileAndMapping("fee_details", outputDir);
+        // Fails because sheet names are limited to 31 characters and this limit is exceeded by "[Versatel Germany$Connection - Details]"
+        TestFileAndMapping("connection_point", outputDir);
+
+    }
+
+    //@Test // Disabled until sheet name character limit issue can be resolved
+    void createAndTestEDRDataMapping() throws IOException {
+
+        when(project.getArtifactId()).thenReturn("edr_data");
+
+        outputDir = new File(sut.outputDir);
+
+        sut.tableNames = Arrays.asList(
+                "[SQL_A1_EDEBIT$Internet Buffer Table EDR]",
+                "[Versatel Germany$Internet Buffer Table EDR]",
+                "[VTB_EC$Internet Buffer Table EDR]",
+                "[tesion GmbH$Internet Buffer Table EDR]",
+                "[KomTel GmbH$Internet Buffer Table EDR]",
+                "[VTW_EC$Internet Buffer Table EDR]");
+
+        sut.execute();
+        // Fails because sheet names are limited to 31 characters and this limit is exceeded"
+        TestFileAndMapping("edr_data", outputDir);
+
+    }
+
+    //@Test // Disabled until sheet name character limit issue can be resolved
+    void createAndTestInternetAccountsMapping() throws IOException {
+
+        when(project.getArtifactId()).thenReturn("internet_accounts");
+
+        outputDir = new File(sut.outputDir);
+
+        sut.tableNames = Arrays.asList(
+                "[SQL_A1_EDEBIT$Internet Account]",
+                "[Versatel Germany$Internet Account]",
+                "[VTB_EC$Internet Account]",
+                "[tesion GmbH$Internet Account]",
+                "[KomTel GmbH$Internet Account]",
+                "[VTW_EC$Internet Account]");
+
+        sut.execute();
+        // Fails because sheet names are limited to 31 characters and this limit is exceeded"
+        TestFileAndMapping("internet_accounts", outputDir);
+
+    }
+
+    @Test
+    void createAndTestInvoiceLinePositionMapping() throws IOException {
+
+        when(project.getArtifactId()).thenReturn("invoice-line-position");
+
+        outputDir = new File(sut.outputDir);
+
+        sut.tableNames = Arrays.asList(
+                "[SQL_A1_EDEBIT$Subcontract]",
+                "[Versatel Germany$Subcontract]",
+                "[VTB_EC$Subcontract]",
+                "[tesion GmbH$Subcontract]",
+                "[KomTel GmbH$Subcontract]",
+                "[VTW_EC$Subcontract]");
+
+        sut.execute();
+        TestFileAndMapping("invoice-line-position", outputDir);
 
     }
 
