@@ -8,6 +8,7 @@ import de.microtema.maven.plugin.hbm2java.model.ProjectData;
 import de.microtema.maven.plugin.hbm2java.model.TableDescription;
 import de.microtema.model.converter.util.ClassUtil;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -88,6 +89,12 @@ public class Hbm2JavaGeneratorMojo extends AbstractMojo {
         List<TableDescription> tableDescriptions = new ArrayList<>();
 
         for (String tableName : tableNames) {
+
+            tableName = StringUtils.trim(tableName);
+
+            tableName = MojoFileUtil.getTableName(tableName);
+
+            logMessage("tableName: " + tableName);
 
             List<ColumnDescription> columnDescriptions = jdbcMetadataService.getListColumnDescriptions(databaseConfig, tableName);
 

@@ -11,6 +11,17 @@ public class MojoFileUtil {
         return tableName.replace("[", "").replace("]", "").replaceAll(File.separator, "");
     }
 
+    public static String getTableName(String tableName) {
+
+        String[] parts = tableName.split("\\:");
+
+        if (parts.length == 2) {
+            tableName = parts[1];
+        }
+
+        return tableName;
+    }
+
     public static String resolveFiledType(String javaType, String sqlType) {
 
         switch (javaType) {

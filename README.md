@@ -19,7 +19,7 @@ Reducing Boilerplate Code with hbm2excel maven plugin
 ```
 <plugin>
     <groupId>de.microtema</groupId>
-    <artifactId>hbm2java-maven-plugin</artifactId>
+    <artifactId>hbm2excel-maven-plugin</artifactId>
     <version>2.0.1</version>
     <configuration>
         <packageName>${project.groupId}.repository</packageName>
