@@ -69,6 +69,7 @@ public enum HeaderType {
             switch (cellType) {
                 case "String":
                 case "Integer":
+                case "Long":
                 case "BigDecimal":
                     cell.setCellValue(size);
                     break;

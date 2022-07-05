@@ -48,6 +48,8 @@ public class MojoFileUtil {
                 return LocalDateTime.class.getSimpleName();
             case "image":
                 return byte[].class.getSimpleName();
+            case "bigint":
+                return Long.class.getSimpleName();
             default:
                 return sqlType;
         }
