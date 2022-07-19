@@ -2,37 +2,35 @@ package de.microtema.maven.plugin.hbm2java.excel.template;
 
 import de.microtema.maven.plugin.hbm2java.MojoFileUtil;
 import de.microtema.maven.plugin.hbm2java.model.ColumnDescription;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 
-import java.util.Map;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public enum HeaderType {
 
     SOURCE_FIELD_NAME("Source Field Name", 20_000) {
         @Override
-        public void execute(Cell cell, ColumnDescription columnDescription, Map<String, String> fieldMapping) {
+        public void execute(Cell cell, ColumnDescription columnDescription) {
 
-            String columnName = columnDescription.getName();
+            String columnName = columnDescription.getSourceName();
 
-            String cellValue = fieldMapping.entrySet().stream()
-                    .filter(it -> StringUtils.equalsIgnoreCase(it.getValue(), columnName))
-                    .map(Map.Entry::getKey)
-                    .findFirst().orElse(null);
-
-            cell.setCellValue(cellValue);
+            cell.setCellValue(columnName);
         }
     },
     TARGET_FIELD_NAME("Target Field Name", 10_000) {
         @Override
-        public void execute(Cell cell, ColumnDescription columnDescription, Map<String, String> fieldMapping) {
+        public void execute(Cell cell, ColumnDescription columnDescription) {
 
             cell.setCellValue(columnDescription.getName());
         }
     },
     TYPE("Type", 5_000) {
         @Override
-        public void execute(Cell cell, ColumnDescription columnDescription, Map<String, String> fieldMapping) {
+        public void execute(Cell cell, ColumnDescription columnDescription) {
 
             String cellValue = MojoFileUtil.resolveFiledType(columnDescription.getJavaType(), columnDescription.getSqlType());
 
@@ -41,7 +39,7 @@ public enum HeaderType {
     },
     PRIMARY_KEY("Primary Key", 6_000) {
         @Override
-        public void execute(Cell cell, ColumnDescription columnDescription, Map<String, String> fieldMapping) {
+        public void execute(Cell cell, ColumnDescription columnDescription) {
 
             if (columnDescription.isPrimaryKey()) {
                 cell.setCellValue("Yes");
@@ -50,16 +48,39 @@ public enum HeaderType {
     },
     REQUIRED("Required", 5_000) {
         @Override
-        public void execute(Cell cell, ColumnDescription columnDescription, Map<String, String> fieldMapping) {
+        public void execute(Cell cell, ColumnDescription columnDescription) {
 
-            if (columnDescription.isRequired()) {
+            boolean required = columnDescription.isRequired();
+            List<Boolean> requiredList = columnDescription.getRequiredList();
+
+            Boolean allRequired = null;
+            long count = requiredList.stream().filter(Boolean::booleanValue).count();
+            if (count == 0) {
+                allRequired = Boolean.FALSE;
+            } else if (count == requiredList.size()) {
+                allRequired = Boolean.TRUE;
+            }
+
+            Row row = cell.getRow();
+
+            Sheet sheet = row.getSheet();
+
+            boolean firstSheet = sheet.getSheetName().contains("Common Fields");
+
+            if (firstSheet) {
+                if (Objects.isNull(allRequired)) {
+                    cell.setCellValue("[" + requiredList.stream().map(it -> it ? "y" : "n").collect(Collectors.joining(",")) + "]");
+                } else if (Boolean.TRUE.equals(allRequired)) {
+                    cell.setCellValue("Yes");
+                }
+            } else if (required) {
                 cell.setCellValue("Yes");
             }
         }
     },
     SIZE("Size", 3_000) {
         @Override
-        public void execute(Cell cell, ColumnDescription columnDescription, Map<String, String> fieldMapping) {
+        public void execute(Cell cell, ColumnDescription columnDescription) {
 
             int size = columnDescription.getSize();
 
@@ -78,14 +99,14 @@ public enum HeaderType {
     },
     DEFAULT_VALUE("Default Value", 10_000) {
         @Override
-        public void execute(Cell rowCell, ColumnDescription columnDescription, Map<String, String> fieldMapping) {
-
+        public void execute(Cell cell, ColumnDescription columnDescription) {
+            cell.setCellValue(columnDescription.getDefaultValue());
         }
     },
     COMMENT("Comment", 20_000) {
         @Override
-        public void execute(Cell rowCell, ColumnDescription columnDescription, Map<String, String> fieldMapping) {
-
+        public void execute(Cell cell, ColumnDescription columnDescription) {
+            cell.setCellValue(columnDescription.getDescription());
         }
     };
 
@@ -108,5 +129,5 @@ public enum HeaderType {
         return width;
     }
 
-    public abstract void execute(Cell rowCell, ColumnDescription columnDescription, Map<String, String> fieldMapping);
+    public abstract void execute(Cell rowCell, ColumnDescription columnDescription);
 }

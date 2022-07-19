@@ -1,8 +1,11 @@
 package de.microtema.maven.plugin.hbm2java;
 
+import org.apache.poi.ss.usermodel.Cell;
+
 import java.io.File;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 public class MojoFileUtil {
 
@@ -52,6 +55,22 @@ public class MojoFileUtil {
                 return Long.class.getSimpleName();
             default:
                 return sqlType;
+        }
+    }
+
+    public static String getStringCellValue(Cell cell) {
+
+        if (Objects.isNull(cell)) {
+            return null;
+        }
+
+        switch (cell.getCellType()) {
+            case NUMERIC:
+                return String.valueOf(cell.getNumericCellValue());
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            default:
+                return cell.getStringCellValue();
         }
     }
 }

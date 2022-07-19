@@ -5,13 +5,15 @@ import de.microtema.maven.plugin.hbm2java.model.ColumnDescription;
 import de.microtema.maven.plugin.hbm2java.model.ProjectData;
 import de.microtema.maven.plugin.hbm2java.model.TableDescription;
 import lombok.SneakyThrows;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.FileOutputStream;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
 
 public class ExcelTemplate {
@@ -20,12 +22,17 @@ public class ExcelTemplate {
     public void writeOut(List<TableDescription> tableDescriptions, ProjectData projectData) {
 
         String outputFile = projectData.getOutputFile();
-        Map<String, String> fieldMapping = projectData.getFieldMapping();
+        List<TableDescription> mergeTableDescriptions = projectData.getMergeTableDescriptions();
 
         Workbook workbook = new XSSFWorkbook();
 
-        for (TableDescription tableDescription : tableDescriptions) {
-            writeOutImpl(workbook, tableDescription, fieldMapping);
+        for (int index = 0; index < tableDescriptions.size(); index++) {
+
+            TableDescription tableDescription = tableDescriptions.get(index);
+
+            mergeTableDescription(tableDescription, mergeTableDescriptions, index);
+
+            writeOutImpl(workbook, tableDescription);
         }
 
         FileOutputStream outputStream = new FileOutputStream(outputFile);
@@ -33,10 +40,49 @@ public class ExcelTemplate {
         workbook.close();
     }
 
-    private void writeOutImpl(Workbook workbook, TableDescription tableDescription, Map<String, String> fieldMapping) {
+    private void mergeTableDescription(TableDescription tableDescription, List<TableDescription> mergeTableDescriptions, int currentIndex) {
+
+        TableDescription sourceTableDescription = mergeTableDescriptions.stream().filter(it -> it.getIndex() == currentIndex).findFirst().orElse(null);
+
+        if (Objects.isNull(sourceTableDescription)) {
+            return;
+        }
+
+        List<ColumnDescription> sourceColumns = sourceTableDescription.getColumns();
+        List<ColumnDescription> targetColumns = tableDescription.getColumns();
+
+        for (ColumnDescription targetColumnDescription : targetColumns) {
+
+            ColumnDescription sourceColumnDescription = findColumnDescription(sourceColumns, targetColumnDescription.getName());
+            mergeColumnDescription(targetColumnDescription, sourceColumnDescription);
+        }
+    }
+
+    private void mergeColumnDescription(ColumnDescription targetColumnDescription, ColumnDescription sourceColumnDescription) {
+
+        if (Objects.isNull(sourceColumnDescription)) {
+            return;
+        }
+
+        targetColumnDescription.setSourceName(sourceColumnDescription.getSourceName());
+        targetColumnDescription.setDefaultValue(sourceColumnDescription.getDefaultValue());
+        targetColumnDescription.setDescription(sourceColumnDescription.getDescription());
+    }
+
+    private ColumnDescription findColumnDescription(List<ColumnDescription> sourceColumns, String name) {
+
+        return sourceColumns.stream()
+                .filter(it -> StringUtils.equalsIgnoreCase(it.getName(), name))
+                .findFirst().orElse(null);
+    }
+
+    private void writeOutImpl(Workbook workbook, TableDescription tableDescription) {
 
         List<ColumnDescription> columns = tableDescription.getColumns();
-        String sheetName = MojoFileUtil.cleanupTableName(tableDescription.getName());
+
+        int columnSize = CollectionUtils.size(tableDescription.getColumns());
+
+        String sheetName = MojoFileUtil.cleanupTableName(columnSize + " " + tableDescription.getName());
 
         Sheet sheet = workbook.createSheet(sheetName);
 
@@ -44,7 +90,7 @@ public class ExcelTemplate {
 
         writerColumnFilter(sheet);
 
-        writeContent(sheet, columns, fieldMapping);
+        writeContent(sheet, columns);
 
         createConditionalFormatting(sheet, columns.size());
     }
@@ -77,11 +123,11 @@ public class ExcelTemplate {
 
     private void writerColumnFilter(Sheet sheet) {
 
-        sheet.setAutoFilter(new CellRangeAddress(0, 0, 0, HeaderType.values().length));
+        sheet.setAutoFilter(new CellRangeAddress(0, 0, 0, HeaderType.values().length - 1));
         sheet.createFreezePane(0, 1);
     }
 
-    private void writeContent(Sheet sheet, List<ColumnDescription> columns, Map<String, String> fieldMapping) {
+    private void writeContent(Sheet sheet, List<ColumnDescription> columns) {
 
         CellStyle cellStyle = sheet.getWorkbook().createCellStyle();
 
@@ -105,7 +151,7 @@ public class ExcelTemplate {
 
                 ColumnDescription columnDescription = columns.get(index);
 
-                headerType.execute(rowCell, columnDescription, fieldMapping);
+                headerType.execute(rowCell, columnDescription);
             }
         }
     }

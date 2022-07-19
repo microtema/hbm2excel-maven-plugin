@@ -9,5 +9,7 @@ public class TableDescription {
 
     private String name;
 
+    private int index;
+
     private List<ColumnDescription> columns;
 }

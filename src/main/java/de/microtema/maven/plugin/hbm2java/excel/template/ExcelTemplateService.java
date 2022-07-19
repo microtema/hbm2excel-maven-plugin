@@ -1,10 +1,12 @@
 package de.microtema.maven.plugin.hbm2java.excel.template;
 
+import de.microtema.maven.plugin.hbm2java.MojoFileUtil;
 import de.microtema.maven.plugin.hbm2java.model.ColumnDescription;
 import de.microtema.maven.plugin.hbm2java.model.ProjectData;
 import de.microtema.maven.plugin.hbm2java.model.TableDescription;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -76,6 +78,9 @@ public class ExcelTemplateService {
                     column2Table.put(columnName, tables);
                 }
 
+                List<Boolean> requiredList = getAllRequired(columnName, tableDescriptions);
+                columnDescription.setRequiredList(requiredList);
+
                 tables.add(tableName);
             }
         }
@@ -85,25 +90,71 @@ public class ExcelTemplateService {
         return column2Table.keySet();
     }
 
-    @SneakyThrows
-    public Map<String, String> getFieldMappings(String inputFile) {
+    private List<Boolean> getAllRequired(String columnName, List<TableDescription> tableDescriptions) {
 
-        Map<String, String> fieldMapping = new HashMap<>();
+        List<Boolean> requiredList = new ArrayList<>();
+
+        for (TableDescription tableDescription : tableDescriptions) {
+            tableDescription.getColumns().stream()
+                    .filter(it -> StringUtils.equalsIgnoreCase(it.getName(), columnName))
+                    .forEach(it -> requiredList.add(it.isRequired()));
+        }
+
+        return requiredList;
+    }
+
+    @SneakyThrows
+    public List<TableDescription> getFieldMappings(String inputFile) {
+
+        if (StringUtils.isEmpty(inputFile)) {
+            return Collections.emptyList();
+        }
+
+        List<TableDescription> tableDescriptions = new ArrayList<>();
 
         InputStream inputStream = new FileInputStream(inputFile);
 
         Workbook workbook = new XSSFWorkbook(inputStream);
 
-        Sheet sheet = workbook.getSheetAt(0);
+        int numberOfSheets = workbook.getNumberOfSheets();
 
-        for (Row row : sheet) {
+        for (int index = 0; index < numberOfSheets; index++) {
 
-            Cell cell1 = row.getCell(0);
-            Cell cell2 = row.getCell(1);
+            Sheet sheet = workbook.getSheetAt(index);
 
-            fieldMapping.put(cell1.getStringCellValue(), cell2.getStringCellValue());
+            TableDescription tableDescription = new TableDescription();
+
+            tableDescription.setName(sheet.getSheetName());
+            tableDescription.setIndex(index);
+            List<ColumnDescription> columns = new ArrayList<>();
+            tableDescription.setColumns(columns);
+
+            tableDescriptions.add(tableDescription);
+
+            for (Row row : sheet) {
+
+                int rowNum = row.getRowNum();
+
+                if (rowNum == 0) {
+                    continue;
+                }
+
+                Cell sourceNameCell = row.getCell(0);
+                Cell targetNameCell = row.getCell(1);
+                Cell defaultValueCell = row.getCell(6);
+                Cell descriptionCell = row.getCell(7);
+
+                ColumnDescription columnDescription = new ColumnDescription();
+
+                columnDescription.setSourceName(sourceNameCell.getStringCellValue());
+                columnDescription.setName(targetNameCell.getStringCellValue());
+                columnDescription.setDefaultValue(MojoFileUtil.getStringCellValue(defaultValueCell));
+                columnDescription.setDescription(MojoFileUtil.getStringCellValue(descriptionCell));
+
+                columns.add(columnDescription);
+            }
         }
 
-        return fieldMapping;
+        return tableDescriptions;
     }
 }

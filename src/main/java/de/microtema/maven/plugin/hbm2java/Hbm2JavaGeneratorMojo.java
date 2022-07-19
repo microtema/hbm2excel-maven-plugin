@@ -17,8 +17,10 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
 import java.io.File;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 @Mojo(name = "generate", defaultPhase = LifecyclePhase.COMPILE)
 public class Hbm2JavaGeneratorMojo extends AbstractMojo {
@@ -41,12 +43,6 @@ public class Hbm2JavaGeneratorMojo extends AbstractMojo {
     @Parameter(property = "output-dir")
     String outputDir = "./Resources/mapping";
 
-    @Parameter(property = "input-file")
-    String inputFile;
-
-    @Parameter(property = "field-mapping")
-    Properties fieldMapping = new Properties();
-
     JdbcMetadataService jdbcMetadataService = ClassUtil.createInstance(JdbcMetadataService.class);
     ExcelTemplateService excelTemplateService = ClassUtil.createInstance(ExcelTemplateService.class);
 
@@ -64,12 +60,12 @@ public class Hbm2JavaGeneratorMojo extends AbstractMojo {
             return;
         }
 
+        List<TableDescription> mergeTableDescriptions = Collections.emptyList();
+
         File file = new File(outputFilePath);
         if (file.exists()) {
 
-            logMessage("Skip maven module: " + appName + " since " + file.getName() + " already exist!");
-
-            return;
+            mergeTableDescriptions = excelTemplateService.getFieldMappings(outputFilePath);
         }
 
         File dir = new File(outputDir);
@@ -107,33 +103,10 @@ public class Hbm2JavaGeneratorMojo extends AbstractMojo {
 
         ProjectData projectData = new ProjectData();
 
-        projectData.setFieldMapping(getFieldMappings());
         projectData.setOutputFile(outputFilePath);
+        projectData.setMergeTableDescriptions(mergeTableDescriptions);
 
         excelTemplateService.writeTemplates(tableDescriptions, projectData);
-    }
-
-    private Map<String, String> getFieldMappings() {
-
-        Map<String, String> fieldMappings = streamConvert(fieldMapping);
-
-        if (Objects.nonNull(inputFile)) {
-
-            Map<String, String> fieldMappings2 = excelTemplateService.getFieldMappings(inputFile);
-
-            fieldMappings.putAll(fieldMappings2);
-        }
-
-        return fieldMappings;
-    }
-
-    public Map<String, String> streamConvert(Properties prop) {
-        return prop.entrySet().stream().collect(
-                Collectors.toMap(
-                        e -> String.valueOf(e.getKey()),
-                        e -> String.valueOf(e.getValue()),
-                        (prev, next) -> next, HashMap::new
-                ));
     }
 
     void logMessage(String message) {
