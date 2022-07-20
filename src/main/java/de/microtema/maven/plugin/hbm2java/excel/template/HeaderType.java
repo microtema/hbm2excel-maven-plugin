@@ -1,6 +1,6 @@
 package de.microtema.maven.plugin.hbm2java.excel.template;
 
-import de.microtema.maven.plugin.hbm2java.MojoFileUtil;
+import de.microtema.maven.plugin.hbm2java.MojoUtil;
 import de.microtema.maven.plugin.hbm2java.model.ColumnDescription;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -32,7 +32,7 @@ public enum HeaderType {
         @Override
         public void execute(Cell cell, ColumnDescription columnDescription) {
 
-            String cellValue = MojoFileUtil.resolveFiledType(columnDescription.getJavaType(), columnDescription.getSqlType());
+            String cellValue = MojoUtil.resolveFiledType(columnDescription.getJavaType(), columnDescription.getSqlType());
 
             cell.setCellValue(cellValue);
         }
@@ -85,7 +85,7 @@ public enum HeaderType {
             int size = columnDescription.getSize();
 
             // NOTE: not every type provide/support size attribute
-            String cellType = MojoFileUtil.resolveFiledType(columnDescription.getJavaType(), columnDescription.getSqlType());
+            String cellType = MojoUtil.resolveFiledType(columnDescription.getJavaType(), columnDescription.getSqlType());
 
             switch (cellType) {
                 case "String":

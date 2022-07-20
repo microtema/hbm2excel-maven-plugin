@@ -1,6 +1,6 @@
 package de.microtema.maven.plugin.hbm2java.excel.template;
 
-import de.microtema.maven.plugin.hbm2java.MojoFileUtil;
+import de.microtema.maven.plugin.hbm2java.MojoUtil;
 import de.microtema.maven.plugin.hbm2java.model.ColumnDescription;
 import de.microtema.maven.plugin.hbm2java.model.ProjectData;
 import de.microtema.maven.plugin.hbm2java.model.TableDescription;
@@ -148,8 +148,8 @@ public class ExcelTemplateService {
 
                 columnDescription.setSourceName(sourceNameCell.getStringCellValue());
                 columnDescription.setName(targetNameCell.getStringCellValue());
-                columnDescription.setDefaultValue(MojoFileUtil.getStringCellValue(defaultValueCell));
-                columnDescription.setDescription(MojoFileUtil.getStringCellValue(descriptionCell));
+                columnDescription.setDefaultValue(MojoUtil.getStringCellValue(defaultValueCell));
+                columnDescription.setDescription(MojoUtil.getStringCellValue(descriptionCell));
 
                 columns.add(columnDescription);
             }

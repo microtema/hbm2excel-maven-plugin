@@ -1,6 +1,6 @@
 package de.microtema.maven.plugin.hbm2java.excel.template;
 
-import de.microtema.maven.plugin.hbm2java.MojoFileUtil;
+import de.microtema.maven.plugin.hbm2java.MojoUtil;
 import de.microtema.maven.plugin.hbm2java.model.ColumnDescription;
 import de.microtema.maven.plugin.hbm2java.model.ProjectData;
 import de.microtema.maven.plugin.hbm2java.model.TableDescription;
@@ -82,7 +82,7 @@ public class ExcelTemplate {
 
         int columnSize = CollectionUtils.size(tableDescription.getColumns());
 
-        String sheetName = MojoFileUtil.cleanupTableName(columnSize + " " + tableDescription.getName());
+        String sheetName = MojoUtil.cleanupTableName(columnSize + " " + tableDescription.getName());
 
         Sheet sheet = workbook.createSheet(sheetName);
 

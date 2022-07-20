@@ -1,5 +1,6 @@
 package de.microtema.maven.plugin.hbm2java;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 
 import java.io.File;
@@ -7,7 +8,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-public class MojoFileUtil {
+public class MojoUtil {
 
     public static String cleanupTableName(String tableName) {
 
@@ -18,11 +19,28 @@ public class MojoFileUtil {
 
         String[] parts = tableName.split("\\:");
 
+        if (parts.length == 1) {
+            return parts[0];
+        }
         if (parts.length == 2) {
-            tableName = parts[1];
+            return parts[1];
+        }
+        if (parts.length == 3) {
+            return parts[2];
         }
 
-        return tableName;
+        return null;
+    }
+
+    public static String getDatabaseName(String tableName) {
+
+        String[] parts = tableName.split("\\:");
+
+        if (parts.length == 3) {
+            return parts[1];
+        }
+
+        return null;
     }
 
     public static String resolveFiledType(String javaType, String sqlType) {
@@ -72,5 +90,16 @@ public class MojoFileUtil {
             default:
                 return cell.getStringCellValue();
         }
+    }
+
+    public static String getHostName(String host, String tableNameRaw) {
+
+        String databaseName = getDatabaseName(tableNameRaw);
+
+        if (StringUtils.isEmpty(databaseName)) {
+            return host;
+        }
+
+        return host + ";databaseName=" + databaseName;
     }
 }

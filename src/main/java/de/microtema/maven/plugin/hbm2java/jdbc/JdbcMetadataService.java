@@ -1,6 +1,6 @@
 package de.microtema.maven.plugin.hbm2java.jdbc;
 
-import de.microtema.maven.plugin.hbm2java.MojoFileUtil;
+import de.microtema.maven.plugin.hbm2java.MojoUtil;
 import de.microtema.maven.plugin.hbm2java.model.ColumnDescription;
 import de.microtema.maven.plugin.hbm2java.model.DatabaseConfig;
 import lombok.SneakyThrows;
@@ -14,10 +14,10 @@ import java.util.Set;
 public class JdbcMetadataService {
 
     @SneakyThrows
-    public List<ColumnDescription> getListColumnDescriptions(DatabaseConfig databaseConfig, String tableName) {
+    public List<ColumnDescription> getListColumnDescriptions(DatabaseConfig databaseConfig, String tableNameRaw) {
 
         String jdbcDriver = databaseConfig.getJdbcDriver();
-        String host = databaseConfig.getHost();
+        String host = MojoUtil.getHostName(databaseConfig.getHost(), tableNameRaw);
 
         // Register JDBC driver
         Class.forName(jdbcDriver);
@@ -28,6 +28,8 @@ public class JdbcMetadataService {
         List<ColumnDescription> columnNames = new ArrayList<>();
 
         try (Connection connection = DriverManager.getConnection(host, userName, password)) {
+
+            String tableName = MojoUtil.getTableName(tableNameRaw);
 
             Set<String> primaryKeys = getPrimaryKeys(tableName, connection);
 
@@ -65,7 +67,7 @@ public class JdbcMetadataService {
     private Set<String> getPrimaryKeys(String tableName, Connection connection) throws SQLException {
 
         DatabaseMetaData metaData = connection.getMetaData();
-        ResultSet primaryKeys = metaData.getPrimaryKeys(null, null, MojoFileUtil.cleanupTableName(tableName));
+        ResultSet primaryKeys = metaData.getPrimaryKeys(null, null, MojoUtil.cleanupTableName(tableName));
 
         Set<String> pkColumnSet = new HashSet<>();
 
