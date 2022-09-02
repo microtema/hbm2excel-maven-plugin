@@ -81,6 +81,7 @@ public class Hbm2JavaGeneratorMojo extends AbstractMojo {
         databaseConfig.setHost(host);
         databaseConfig.setUserName(userName);
         databaseConfig.setPassword(password);
+        databaseConfig.setJdbcDriver(MojoUtil.getJdbcDriver(host));
 
         List<TableDescription> tableDescriptions = new ArrayList<>();
 
