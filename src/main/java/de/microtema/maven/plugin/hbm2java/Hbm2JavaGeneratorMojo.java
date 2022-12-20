@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Mojo(name = "generate", defaultPhase = LifecyclePhase.COMPILE)
 public class Hbm2JavaGeneratorMojo extends AbstractMojo {
@@ -85,18 +86,21 @@ public class Hbm2JavaGeneratorMojo extends AbstractMojo {
 
         List<TableDescription> tableDescriptions = new ArrayList<>();
 
+        boolean uniqueNames = tableNames.stream()
+                .map(StringUtils::trim)
+                .map(MojoUtil::getTableName).collect(Collectors.toSet()).size() == tableNames.size();
+
         for (String tableNameRaw : tableNames) {
 
             String tableName = StringUtils.trim(tableNameRaw);
 
+            String namePrefix = MojoUtil.getNamePrefix(tableName);
             tableName = MojoUtil.getTableName(tableName);
-
-            logMessage("tableName: " + tableName);
 
             List<ColumnDescription> columnDescriptions = jdbcMetadataService.getListColumnDescriptions(databaseConfig, tableNameRaw);
 
             TableDescription tableDescription = new TableDescription();
-            tableDescription.setName(tableName);
+            tableDescription.setName(uniqueNames ? tableName : namePrefix + "." + tableName);
             tableDescription.setColumns(columnDescriptions);
 
             tableDescriptions.add(tableDescription);

@@ -43,6 +43,17 @@ public class MojoUtil {
         return null;
     }
 
+    public static String getNamePrefix(String tableName) {
+
+        String[] parts = tableName.split("\\:");
+
+        if (parts.length > 1) {
+            return parts[0];
+        }
+
+        return null;
+    }
+
     public static String resolveFiledType(String javaType, String sqlType) {
 
         switch (javaType) {
